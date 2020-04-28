@@ -14,3 +14,10 @@
 4. NIO
 5. socket 3->bind(3,8090)->lisen(3)->fcntl(3,nonblock)->accept循环，返回-1|5->fcntl(5,nonblock)->recv(5)
 6. select->poll->epoll![select](select.jpg)![](poll.png)![](epoll.png)
+### NIO
+1. netty使用Nio技术，jdk的NIO存在epoll空轮询bug，即在selector被触发，但是轮询没有结果为空，也没有wakeup或新消息，则会发生空轮询，CPU100%。
+2. netty的解决办法是对selector的空轮询进行计数，当一个时间周期内发生一定数量的空轮询，则判断发生bug，就将原selector上注册的socketChannel注册到新selector上，并注销原selector。
+3. ![SelectorNullCall.jpg](SelectorNullCall.jpg)
+4. jdk1.4中BIO在accept与recv有两次阻塞
+5. jdk1.8中BIO使用的是poll，只是只放了一个fd
+6. epoll优点：1、epfd在内核空间，减少数据在用户空间和内核空间切换传输。2、每次事件到来，数据先存在DMA，且事件的fd进行置位，内核不必遍历fd集合，然后返回给用户空间。
