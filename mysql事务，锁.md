@@ -18,11 +18,12 @@
 6. undo log 是逻辑日志，可以理解为
 
 ## 持久性原理：redo log
-1. redo log记录的是新数据的备份
+1. redo log记录的是新数据的备份，不管事务是否提交都会记录下来
 2. 事务提交前，先持久化redo log
 3. redo log buffer->OS buffer->fsync()->redo log file
 4. ![mysql持久化](mysqlserizal.png)
 5. ![](mysqlupdate.png)
+6. 在实例和介质失败（media failure）时，redo log文件就能派上用场，如数据库掉电，InnoDB存储引擎会使用redo log恢复到掉电前的时刻，以此来保证数据的完整性。
 
 ## 隔离级别
 1. 脏读：一个事务中读取到其它事务未提交的数据
