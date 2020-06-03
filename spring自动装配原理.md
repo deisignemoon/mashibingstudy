@@ -1,0 +1,23 @@
+# springboot自动装配原理
+## springboot启动
+1. springboot启动会先初始化一个SpringApplication对象，在其构造体中判断应用类型、加载初始化器和设置可用监听器、设置Main方法定义类，其中使用getSpringFactoriesInstances(),从/META-INF/spring.factories中读取对应的字段，并按照其全限定类名实例化对应的初始化器（ApplicationContextInitializer）和监听器（ApplicationListener）。
+2. 接下来执行SpringApplication$run()。其中prepareContext方法之前的步骤都是在设置计时器（stopWatch）、启动监听器（SprinfApplicationRunListeners）、获取环境参数、打印Banner、生成上下文（AnnoationConfigServletWebServerApplicationContext）、准备上下文异常报告器（也是从spring.factories中实例化）。
+3. 在prepareContext方法中设置了上下文的环境参数、应用了ApplicationContextInitializer，new DefaultListableBeanFactory，最主要的是load()方法
+4. load()创建了一个BeanDefinitionLoader对象，并执行了BeanDefinitionLoader对象的load()。在其中循环判断了BeanDefinitionLoader的Object[] sources内值的类型，以判断需要加载什么类型的解析，我们进入class，即注解解析的load方法。
+5. 下面方法将用来判断是否资源的类型，是使用groovy加载还是使用注解的方式。我们进入使用注解加载，进入判断isComponent()是否为true。
+6. isComponent()方法判断启动类中是否包含@Component注解，但是会神奇的发现我们的启动类中并没有该注解，继续更进发现MergedAnnotations类传入了一个参数SearchStrategy.TYPE_HIERARCHY，会查找继承关系中是否包含这个注解，@SpringBootApplication-->@SpringBootConﬁguration->@Conﬁguration-->@Component,当找到@Component注解之后，返回true。
+7. 回到BeanDefinitionLoader$load()，会把该对象注册到 AnnotatedBeanDeﬁnitionReader对象中。调用doRegisterBean方法。调用BeanDefinitionReaderUtils$registerBeanDefinition方法，将主类的bean definition注册到bean factory中。
+8. 至此，启动对象的注入完成，接下来进入到自动装配中。
+## spring启动
+9. 完成springboot的prepareContext后进入refreshContext(context);其调用了spring的refresh()。其中 invokeBeanFactoryPostProcessors(beanFactory);就是自动装配的入口
+10. invokeBeanFactoryPostProcessors调用了invokeBeanFactoryPostProcessors的重载方法
+，其中遍历获得BeanDefinitionRegistryPostProcessor的一个字符串数组，其中一个以“internalConfigurationAnnotationProcessor”为名的实际ConfigurationClassPostProcessor的类就是自动装配的逻辑
+11. invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry)，执行ConfigurationClassPostProcessor$processConfigBeanDefinitions,解析所有有@Configuration的类，parser.parse(candidates);
+12. 调用ConfigurationClassParser$doProcessConfigurationClass。处理所有Bean的注解，如果注解有父类，也处理父类。其中processImports方法是我们需要的。
+13. processImports递归地收集@Import的值，返回
+14. 回到ConﬁgurationClassParser$parser，最后一行调用this.deferredImportSelectorHandler.process();
+15.  handler.processGroupImports()-> grouping.getImports()->this.group.process()
+16.  最终调用到AutoConfigurationImportSelector$process(),获得AutoConfigurationImportSelector
+17.  通过AutoConfigurationImportSelector读取到有那些XXXAutoConfiguration需要被读取到SpringBoot之中。
+18.  使用AutoConfigurationImportSelector将需要的BeanDefinition读取到context中
+19.  最终在AbstractSpringContext$refresh()中的finishBeanFactoryInitialization(beanFactory)将Bean实例化
