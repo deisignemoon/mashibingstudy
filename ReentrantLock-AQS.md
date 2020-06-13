@@ -16,3 +16,6 @@
 2. tryRelease()由Sync进行实现，其内部对state进行减一，完成一次释放锁，如果锁还有其它层未释放，返回false，然后不做其它操作
 3. 如果锁已经完全释放，即state=0，则将队列中的head节点的waitStatusCAS地设置为0，然后将第二个节点设置为head节点，并将其代表的Thread，unpark唤醒。该线程获得锁
 4. 如果第二个节点被取消，则从tail向前获得一个为被取消的node进行Thread唤醒。
+
+### 阻塞队列
+[线程池ThreadPoolExecutor分析: 线程池是什么时候创建线程的，队列中的任务是什么时候取出来的？](https://www.cnblogs.com/yszzu/p/10122658.html)
