@@ -132,3 +132,15 @@
 5. 数据按顺时针存储到对应slot的节点上
 6. redis节点扩展只需要迁移两个节点的数据
 7. 弊端：会发生数据倾斜
+
+## redis安装
+1. linux需要gcc：yum -y install gcc gcc-c++ kernel-devel
+2. 下载redis源码包：redis-5.0.10.tar
+3. 解压
+4. 进入redis目录
+5. 执行 make && make install
+6. 如果发生： jemalloc/jemalloc.h: No such file or directory。可能是因为我们在开始执行make 时遇到了错误（大部分是由于gcc未安装），然后我们安装好了gcc 后，我们再执行make ,这时就出现了jemalloc/jemalloc.h: No such file or directory。
+7. 执行： make distclean  && make  清理残留的文件
+
+## 利用redis-cli攻击服务器
+[Redis 未授权访问漏洞深度利用](https://blog.csdn.net/qq_27446553/article/details/78096385)
